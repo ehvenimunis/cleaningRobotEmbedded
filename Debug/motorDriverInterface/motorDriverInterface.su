@@ -1,0 +1,6 @@
+motorDriverInterface.c:25:13:MDI_writeCommand	16	static
+motorDriverInterface.c:34:13:MDI_writeSmallData	16	static
+motorDriverInterface.c:44:13:MDI_writeBigData	32	static
+motorDriverInterface.c:58:6:MDI_2byteWriteData	24	static
+motorDriverInterface.c:73:6:MDI_sendDataChannel1	32	static
+motorDriverInterface.c:94:6:MDI_getDataChannel1	16	static
