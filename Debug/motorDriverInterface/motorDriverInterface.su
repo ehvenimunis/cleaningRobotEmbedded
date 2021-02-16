@@ -1,6 +1,11 @@
-motorDriverInterface.c:25:13:MDI_writeCommand	16	static
-motorDriverInterface.c:34:13:MDI_writeSmallData	16	static
-motorDriverInterface.c:44:13:MDI_writeBigData	32	static
-motorDriverInterface.c:58:6:MDI_2byteWriteData	24	static
-motorDriverInterface.c:73:6:MDI_sendDataChannel1	32	static
-motorDriverInterface.c:94:6:MDI_getDataChannel1	16	static
+motorDriverInterface.c:26:13:MDI_writeCommand	16	static
+motorDriverInterface.c:35:13:MDI_writeSmallData	16	static
+motorDriverInterface.c:45:13:MDI_writeBigData	32	static
+motorDriverInterface.c:59:6:MDI_2byteWriteData	24	static
+motorDriverInterface.c:74:6:MDI_sendDataChannel1	32	static
+motorDriverInterface.c:95:6:MDI_getDataChannel1	16	static
+motorDriverInterface.c:209:9:getDriver1kd	4	static
+motorDriverInterface.c:210:9:getDriver1ki	4	static
+motorDriverInterface.c:211:9:getDriver1kp	4	static
+motorDriverInterface.c:212:9:getDriver1factor	4	static
+motorDriverInterface.c:213:10:getDriver1angle	4	static

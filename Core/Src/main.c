@@ -23,6 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "motorDriverInterface.h"
+#include "analogValuesController.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -59,7 +60,7 @@ static void MX_USART1_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+uint16_t val1,val2;
 /* USER CODE END 0 */
 
 /**
@@ -102,22 +103,11 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-/*	  HAL_Delay(100);
-	  HAL_ADC_Start(&hadc1);
-	  HAL_ADC_PollForConversion(&hadc1, 100);
-	  adc1 = HAL_ADC_GetValue(&hadc1);
-
-	  HAL_ADC_PollForConversion(&hadc1, 100);
-	  adc2 = HAL_ADC_GetValue(&hadc1);
-	  HAL_ADC_Stop (&hadc1);*/
-	/*	HAL_UART_Transmit(&huart1,
-				(uint8_t*)tstBuff,
-				sprintf(tstBuff, "adc1 %d\tadc2 %d\n\n\n",
-					      adc1,adc2)
-						,1500);*/
-
+	  readAnalog2Values(&hadc1);
 	  MDI_sendDataChannel1(900,200,155,20,1);
 	  MDI_getDataChannel1();
+	  val1=valuesMap(getAnalogValue1(),0,4095,0,1000);
+	  val2=valuesMap(getAnalogValue2(),0,4095,0,1000);
   }
   /* USER CODE END 3 */
 }
