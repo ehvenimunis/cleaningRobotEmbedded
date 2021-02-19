@@ -9,13 +9,13 @@
 
 #if DRIVERCHANNEL == 1
 mD_interface driver1;
-uint8_t rec1Buff[10];
+uint8_t rec1Buff[9];
 #elif DRIVERCHANNEL == 2
 mD_interface driver1;
-uint8_t rec1Buff[10];
+uint8_t rec1Buff[9];
 
 mD_interface driver2;
-uint8_t rec2Buff[10];
+uint8_t rec2Buff[9];
 #endif
 /**
  * @brief Write command to Motor Driver
@@ -87,7 +87,7 @@ void MDI_sendDataChannel1(uint16_t angleVal,uint8_t kd,uint8_t ki,uint8_t kp,uin
 	MDI_writeSmallData(&MDI_channel1,tmp); //checksum first byte
 	uint8_t tmpComp =~tmp;
 	MDI_writeSmallData(&MDI_channel1,tmpComp); //checksum second byte
-}
+} //78 87
 /**
  * @brief get to Motor Driver 1 values
  * @return none
@@ -141,23 +141,28 @@ void MDI_sendDataChannel1(uint16_t angleVal,uint8_t kd,uint8_t ki,uint8_t kp,uin
  * @brief get to Motor Driver 1 values
  * @return none
  */
+uint8_t getFirstData1;
 void MDI_getDataChannel1(void){
-	HAL_UART_Receive(&MDI_channel1,(uint8_t*)rec1Buff,10,50);
-	if(0xFF==rec1Buff[0] && 0xFF==rec1Buff[1]){
-		uint16_t checksumTmp=0;
-		for(uint8_t c=2;c<8;c++)checksumTmp+=rec1Buff[c];
-		uint8_t tmp =checksumTmp%256;
-		uint8_t tmpComp =~tmp;
-		if(tmp == rec1Buff[8] && tmpComp == rec1Buff[9]){
-			driver1.angle=((uint16_t)rec1Buff[2] << 8) | rec1Buff[3];
-			driver1.pid_kd=rec1Buff[4];
-			driver1.pid_ki=rec1Buff[5];
-			driver1.pid_kp=rec1Buff[6];
-			driver1.factor=rec1Buff[7];
-		}
+	HAL_UART_Receive(&MDI_channel1,(uint8_t*)&getFirstData1,1,TIMEOUTVAL);
+	if(0xFF ==getFirstData1){
+		HAL_UART_Receive(&MDI_channel1,(uint8_t*)rec1Buff,9,TIMEOUTVAL*9);
+			if(0xFF==rec1Buff[0]){
+				uint16_t checksumTmp=0;
+				for(uint8_t c=1;c<7;c++)checksumTmp+=rec1Buff[c];
+				uint8_t tmp =checksumTmp%256;
+				uint8_t tmpComp =~tmp;
+				if(tmp == rec1Buff[7] && tmpComp == rec1Buff[8]){
+					driver1.angle=((uint16_t)rec1Buff[1] << 8) | rec1Buff[2];
+					driver1.pid_kd=rec1Buff[3];
+					driver1.pid_ki=rec1Buff[4];
+					driver1.pid_kp=rec1Buff[5];
+					driver1.factor=rec1Buff[6];
+				}
+			}
+			for(uint8_t c=0;c<9;c++)rec1Buff[c]=0;
 	}
-	for(uint8_t c=2;c<8;c++)rec1Buff[c]=0;
-}
+}//"%d - %d - %d - %d - %d - %d - %d - %d - %d - %d\n",rec1Buff[0],rec1Buff[1],rec1Buff[2],rec1Buff[3],rec1Buff[4],rec1Buff[5],rec1Buff[6],rec1Buff[7],rec1Buff[8],rec1Buff[9]
+//"DRV 1: angle: %d - kd: %d - ki: %d - kp: %d - factor: %d\n",driver1.angle,driver1.pid_kd,driver1.pid_ki,driver1.pid_kp,driver1.factor
 /**
  * @brief drive to Motor Driver 2
  * @param angleVal -> get motor angle value
@@ -186,23 +191,28 @@ void MDI_sendDataChannel2(uint16_t angleVal,uint8_t kd,uint8_t ki,uint8_t kp,uin
  * @brief get to Motor Driver 2 values
  * @return none
  */
+uint8_t getFirstData2;
 void MDI_getDataChannel2(void){
-	HAL_UART_Receive(&MDI_channel2,(uint8_t*)rec2Buff,10,50);
-	if(0xFF==rec2Buff[0] && 0xFF==rec2Buff[1]){
+	HAL_UART_Receive(&MDI_channel1,(uint8_t*)&getFirstData2,1,TIMEOUTVAL);
+	if(0xFF ==getFirstData2){
+	HAL_UART_Receive(&MDI_channel2,(uint8_t*)rec2Buff,10,100);
+	if(0xFF==rec2Buff[0]){
 		uint16_t checksumTmp=0;
-		for(uint8_t c=2;c<8;c++)checksumTmp+=rec2Buff[c];
+		for(uint8_t c=1;c<7;c++)checksumTmp+=rec2Buff[c];
 		uint8_t tmp =checksumTmp%256;
 		uint8_t tmpComp =~tmp;
-		if(tmp == rec2Buff[8] && tmpComp == rec2Buff[9]){
-			driver2.angle=((uint16_t)rec2Buff[2] << 8) | rec2Buff[3];
-			driver2.pid_kd=rec2Buff[4];
-			driver2.pid_ki=rec2Buff[5];
-			driver2.pid_kp=rec2Buff[6];
-			driver2.factor=rec2Buff[7];
+		if(tmp == rec2Buff[7] && tmpComp == rec2Buff[8]){
+			driver2.angle=((uint16_t)rec2Buff[1] << 8) | rec2Buff[2];
+			driver2.pid_kd=rec2Buff[3];
+			driver2.pid_ki=rec2Buff[4];
+			driver2.pid_kp=rec2Buff[5];
+			driver2.factor=rec2Buff[6];
 		}
 	}
-	for(uint8_t c=2;c<8;c++)rec2Buff[c]=0;
-}
+	for(uint8_t c=0;c<9;c++)rec2Buff[c]=0;
+	}
+}//"DRV 2: angle: %d - kd: %d - ki: %d - kp: %d - factor: %d\n",driver2.angle,driver2.pid_kd,driver2.pid_ki,driver2.pid_kp,driver2.factor
+
 #endif
 
 #if DRIVERCHANNEL == 1

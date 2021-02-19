@@ -19,11 +19,13 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "cmsis_os.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "motorDriverInterface.h"
 #include "analogValuesController.h"
+#include "buttonController.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -43,8 +45,53 @@
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
 
-UART_HandleTypeDef huart1;
+TIM_HandleTypeDef htim4;
 
+UART_HandleTypeDef huart1;
+UART_HandleTypeDef huart3;
+
+/* Definitions for sendData1 */
+osThreadId_t sendData1Handle;
+const osThreadAttr_t sendData1_attributes = {
+  .name = "sendData1",
+  .priority = (osPriority_t) osPriorityHigh7,
+  .stack_size = 256 * 4
+};
+/* Definitions for sendData2 */
+osThreadId_t sendData2Handle;
+const osThreadAttr_t sendData2_attributes = {
+  .name = "sendData2",
+  .priority = (osPriority_t) osPriorityHigh6,
+  .stack_size = 256 * 4
+};
+/* Definitions for readAdc */
+osThreadId_t readAdcHandle;
+const osThreadAttr_t readAdc_attributes = {
+  .name = "readAdc",
+  .priority = (osPriority_t) osPriorityHigh5,
+  .stack_size = 256 * 4
+};
+/* Definitions for getData1 */
+osThreadId_t getData1Handle;
+const osThreadAttr_t getData1_attributes = {
+  .name = "getData1",
+  .priority = (osPriority_t) osPriorityHigh4,
+  .stack_size = 256 * 4
+};
+/* Definitions for getData2 */
+osThreadId_t getData2Handle;
+const osThreadAttr_t getData2_attributes = {
+  .name = "getData2",
+  .priority = (osPriority_t) osPriorityHigh3,
+  .stack_size = 256 * 4
+};
+/* Definitions for btnControl */
+osThreadId_t btnControlHandle;
+const osThreadAttr_t btnControl_attributes = {
+  .name = "btnControl",
+  .priority = (osPriority_t) osPriorityHigh2,
+  .stack_size = 128 * 4
+};
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -54,6 +101,15 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_USART1_UART_Init(void);
+static void MX_USART3_UART_Init(void);
+static void MX_TIM4_Init(void);
+void sendData1Task(void *argument);
+void sendData2Task(void *argument);
+void readAdcTask(void *argument);
+void getData1Task(void *argument);
+void getData2Task(void *argument);
+void btnControlTask(void *argument);
+
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -93,9 +149,61 @@ int main(void)
   MX_GPIO_Init();
   MX_ADC1_Init();
   MX_USART1_UART_Init();
+  MX_USART3_UART_Init();
+  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
   /* USER CODE END 2 */
 
+  /* Init scheduler */
+  osKernelInitialize();
+
+  /* USER CODE BEGIN RTOS_MUTEX */
+  /* add mutexes, ... */
+  /* USER CODE END RTOS_MUTEX */
+
+  /* USER CODE BEGIN RTOS_SEMAPHORES */
+  /* add semaphores, ... */
+  /* USER CODE END RTOS_SEMAPHORES */
+
+  /* USER CODE BEGIN RTOS_TIMERS */
+  /* start timers, add new ones, ... */
+  /* USER CODE END RTOS_TIMERS */
+
+  /* USER CODE BEGIN RTOS_QUEUES */
+  /* add queues, ... */
+  /* USER CODE END RTOS_QUEUES */
+
+  /* Create the thread(s) */
+  /* creation of sendData1 */
+  sendData1Handle = osThreadNew(sendData1Task, NULL, &sendData1_attributes);
+
+  /* creation of sendData2 */
+  sendData2Handle = osThreadNew(sendData2Task, NULL, &sendData2_attributes);
+
+  /* creation of readAdc */
+  readAdcHandle = osThreadNew(readAdcTask, NULL, &readAdc_attributes);
+
+  /* creation of getData1 */
+  getData1Handle = osThreadNew(getData1Task, NULL, &getData1_attributes);
+
+  /* creation of getData2 */
+  getData2Handle = osThreadNew(getData2Task, NULL, &getData2_attributes);
+
+  /* creation of btnControl */
+  btnControlHandle = osThreadNew(btnControlTask, NULL, &btnControl_attributes);
+
+  /* USER CODE BEGIN RTOS_THREADS */
+  /* add threads, ... */
+  /* USER CODE END RTOS_THREADS */
+
+  /* USER CODE BEGIN RTOS_EVENTS */
+  /* add events, ... */
+  /* USER CODE END RTOS_EVENTS */
+
+  /* Start scheduler */
+  osKernelStart();
+
+  /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -103,11 +211,8 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  readAnalog2Values(&hadc1);
-	  MDI_sendDataChannel1(900,200,155,20,1);
-	  MDI_getDataChannel1();
-	  val1=valuesMap(getAnalogValue1(),0,4095,0,1000);
-	  val2=valuesMap(getAnalogValue2(),0,4095,0,1000);
+
+	  //
   }
   /* USER CODE END 3 */
 }
@@ -211,6 +316,51 @@ static void MX_ADC1_Init(void)
 }
 
 /**
+  * @brief TIM4 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM4_Init(void)
+{
+
+  /* USER CODE BEGIN TIM4_Init 0 */
+
+  /* USER CODE END TIM4_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM4_Init 1 */
+
+  /* USER CODE END TIM4_Init 1 */
+  htim4.Instance = TIM4;
+  htim4.Init.Prescaler = 15999;
+  htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim4.Init.Period = 1;
+  htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV2;
+  htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim4, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM4_Init 2 */
+
+  /* USER CODE END TIM4_Init 2 */
+
+}
+
+/**
   * @brief USART1 Initialization Function
   * @param None
   * @retval None
@@ -226,7 +376,7 @@ static void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
+  huart1.Init.BaudRate = 57600;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
@@ -244,22 +394,207 @@ static void MX_USART1_UART_Init(void)
 }
 
 /**
+  * @brief USART3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART3_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART3_Init 0 */
+
+  /* USER CODE END USART3_Init 0 */
+
+  /* USER CODE BEGIN USART3_Init 1 */
+
+  /* USER CODE END USART3_Init 1 */
+  huart3.Instance = USART3;
+  huart3.Init.BaudRate = 57600;
+  huart3.Init.WordLength = UART_WORDLENGTH_8B;
+  huart3.Init.StopBits = UART_STOPBITS_1;
+  huart3.Init.Parity = UART_PARITY_NONE;
+  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART3_Init 2 */
+
+  /* USER CODE END USART3_Init 2 */
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
   */
 static void MX_GPIO_Init(void)
 {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+
+  /*Configure GPIO pins : select_Pin plus_Pin minus_Pin */
+  GPIO_InitStruct.Pin = select_Pin|plus_Pin|minus_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 }
 
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
+
+/* USER CODE BEGIN Header_sendData1Task */
+/**
+  * @brief  Function implementing the sendData1 thread.
+  * @param  argument: Not used
+  * @retval None
+  */
+/* USER CODE END Header_sendData1Task */
+void sendData1Task(void *argument)
+{
+  /* USER CODE BEGIN 5 */
+	btnParameterInit();
+  /* Infinite loop */
+  for(;;)
+  {
+  transmissionDriver1();
+  osDelay(10);
+
+  }
+  /* USER CODE END 5 */
+}
+
+/* USER CODE BEGIN Header_sendData2Task */
+/**
+* @brief Function implementing the sendData2 thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_sendData2Task */
+void sendData2Task(void *argument)
+{
+  /* USER CODE BEGIN sendData2Task */
+  /* Infinite loop */
+  for(;;)
+  {
+	transmissionDriver2();
+	osDelay(10);
+  }
+  /* USER CODE END sendData2Task */
+}
+
+/* USER CODE BEGIN Header_readAdcTask */
+/**
+* @brief Function implementing the readAdc thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_readAdcTask */
+void readAdcTask(void *argument)
+{
+  /* USER CODE BEGIN readAdcTask */
+	uint16_t val1,val2;
+  /* Infinite loop */
+  for(;;)
+  {
+	readAnalog2Values(&hadc1);
+	val1=valuesMap(getAnalogValue1(),0,4095,0,1000);
+	setDriver1AngleValue(val1);
+	osDelay(15);
+	val2=valuesMap(getAnalogValue2(),0,4095,0,1000);
+	setDriver2AngleValue(val2);
+	osDelay(15);
+  }
+  /* USER CODE END readAdcTask */
+}
+
+/* USER CODE BEGIN Header_getData1Task */
+/**
+* @brief Function implementing the getData1 thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_getData1Task */
+void getData1Task(void *argument)
+{
+  /* USER CODE BEGIN getData1Task */
+  /* Infinite loop */
+  for(;;)
+  {
+	MDI_getDataChannel1();
+	osDelay(15);
+  }
+  /* USER CODE END getData1Task */
+}
+
+/* USER CODE BEGIN Header_getData2Task */
+/**
+* @brief Function implementing the getData2 thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_getData2Task */
+void getData2Task(void *argument)
+{
+  /* USER CODE BEGIN getData2Task */
+  /* Infinite loop */
+  for(;;)
+  {
+	MDI_getDataChannel2();
+	osDelay(15);
+  }
+  /* USER CODE END getData2Task */
+}
+
+/* USER CODE BEGIN Header_btnControlTask */
+/**
+* @brief Function implementing the btnControl thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_btnControlTask */
+void btnControlTask(void *argument)
+{
+  /* USER CODE BEGIN btnControlTask */
+	buttonController();
+  /* Infinite loop */
+  for(;;)
+  {
+	buttonController();
+    osDelay(50);
+  }
+  /* USER CODE END btnControlTask */
+}
+
+ /**
+  * @brief  Period elapsed callback in non blocking mode
+  * @note   This function is called  when TIM1 interrupt took place, inside
+  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+  * a global variable "uwTick" used as application time base.
+  * @param  htim : TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* USER CODE BEGIN Callback 0 */
+
+  /* USER CODE END Callback 0 */
+  if (htim->Instance == TIM1) {
+    HAL_IncTick();
+  }
+  /* USER CODE BEGIN Callback 1 */
+
+  /* USER CODE END Callback 1 */
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.
