@@ -3,12 +3,12 @@ import time
 import random
 import os
 
-ser1=serial.Serial("/dev/ttyUSB0",57600,timeout=50)
-ser2=serial.Serial("/dev/ttyUSB1",57600,timeout=50)
+ser1=serial.Serial("/dev/ttyUSB0",57600,timeout=5)
+ser2=serial.Serial("/dev/ttyUSB1",57600,timeout=5)
 os.system("clear")
 
-ser1.read()
-ser2.read()
+print("ser1 val",ser1.read())
+print("ser2 val",ser2.read())
 
 def sendVal1():
 	arrList=[]
@@ -81,7 +81,7 @@ def readVal1():
 			ki=arrList[4]
 			kp=arrList[5]
 			factor=arrList[6]
-			print("Drv 1 Read Vals=","Angle=",angle," kd=",kd," ki=",ki," kp=",kp," factor=",factor)
+			print("Ser1 Read Vals=","Angle=",angle," kd=",kd," ki=",ki," kp=",kp," factor=",factor)
 
 def readVal2():
 	arrList=[]
@@ -105,22 +105,26 @@ def readVal2():
 			ki=arrList[4]
 			kp=arrList[5]
 			factor=arrList[6]
-			print("Drv 2 Read Vals=","Angle=",angle," kd=",kd," ki=",ki," kp=",kp," factor=",factor)
-
+			print("Ser2 Read Vals=","Angle=",angle," kd=",kd," ki=",ki," kp=",kp," factor=",factor)
+#for x in range(150):
+#	command = b'\xFF\xFF\x01\x03\x01\x01\x02\x03\x0B\xF4'
+	#angle->259, kd->1,ki->1,kp->2,factor->3,mod ->10,tersi->245
+#	ser1.write(command)
+#	command2 = b'\xFF\xFF\x05\x01\x00\x01\x03\x01\x0B\xF4'
+	#angle->1281, kd->0,ki->1,kp->3,factor->1,mod ->10,tersi->245
+#	ser2.write(command2)
+time.sleep(5)
+checkSer=1
 while 1:	
 	readVal1()
-	time.sleep(0.0005)
 	readVal2()
-	time.sleep(0.0005)
-	
-	
-	#
-
-
 	#command = b'\xFF\xFF\x01\x03\x01\x01\x02\x03\x0B\xF4'
+	#ser1.write(command)
 	#angle->259, kd->1,ki->1,kp->2,factor->3,mod ->10,tersi->245
-	#command = b'\xFF\xFF\x03\x01\x02\x01\x01\x03\x0B\xF4'
+	#command2 = b'\xFF\xFF\x03\x01\x02\x01\x01\x03\x0B\xF4'
+	#ser2.write(command)	
 	#angle->759, kd->2,ki->1,kp->1,factor->3,mod ->10,tersi->245
 	#command = b'\xFF\xFF\x05\x01\x00\x01\x03\x01\x0B\xF4'
 	#angle->1281, kd->0,ki->1,kp->3,factor->1,mod ->10,tersi->245
-	#ser1.write(command)
+	
+	
