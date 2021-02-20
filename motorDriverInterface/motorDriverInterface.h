@@ -14,7 +14,6 @@
 #define DRIVERCHANNEL 2 //how many are there driver
 //Note: uart timeout value when be long then data transmission is safe
 #define TIMEOUTVAL 5 //uart transmission timeout preiod
-#define GETTERTIMEOUTVAL 50 //uart receive timeout preiod
 
 typedef struct{
     uint8_t pid_kd;
@@ -40,7 +39,7 @@ void MDI_getDataChannel1(void);
 #define MDI_channel1 huart1
 extern UART_HandleTypeDef MDI_channel1;
 
-#define MDI_channel2 huart3 //uart channel
+#define MDI_channel2 huart2 //uart channel
 extern UART_HandleTypeDef MDI_channel2;
 
 uint8_t getDriver1kd(void);

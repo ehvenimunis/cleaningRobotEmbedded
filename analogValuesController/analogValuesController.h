@@ -18,7 +18,7 @@
 uint16_t readAndGetAnalog1Value(ADC_HandleTypeDef *adc);
 uint16_t getAnalogValue1(void);
 #elif ANALOGINPUTVAL==2
-void readAnalog2Values(ADC_HandleTypeDef *adc);
+void readAnalog2Values(ADC_HandleTypeDef *adc1,ADC_HandleTypeDef *adc2);
 uint16_t getAnalogValue1(void);
 uint16_t getAnalogValue2(void);
 #endif

@@ -44,11 +44,12 @@
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
+ADC_HandleTypeDef hadc2;
 
 TIM_HandleTypeDef htim4;
 
 UART_HandleTypeDef huart1;
-UART_HandleTypeDef huart3;
+UART_HandleTypeDef huart2;
 
 /* Definitions for sendData1 */
 osThreadId_t sendData1Handle;
@@ -101,8 +102,9 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_USART1_UART_Init(void);
-static void MX_USART3_UART_Init(void);
 static void MX_TIM4_Init(void);
+static void MX_USART2_UART_Init(void);
+static void MX_ADC2_Init(void);
 void sendData1Task(void *argument);
 void sendData2Task(void *argument);
 void readAdcTask(void *argument);
@@ -149,8 +151,9 @@ int main(void)
   MX_GPIO_Init();
   MX_ADC1_Init();
   MX_USART1_UART_Init();
-  MX_USART3_UART_Init();
   MX_TIM4_Init();
+  MX_USART2_UART_Init();
+  MX_ADC2_Init();
   /* USER CODE BEGIN 2 */
   /* USER CODE END 2 */
 
@@ -282,12 +285,12 @@ static void MX_ADC1_Init(void)
   /** Common config
   */
   hadc1.Instance = ADC1;
-  hadc1.Init.ScanConvMode = ADC_SCAN_ENABLE;
+  hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
   hadc1.Init.ContinuousConvMode = ENABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc1.Init.NbrOfConversion = 2;
+  hadc1.Init.NbrOfConversion = 1;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
     Error_Handler();
@@ -296,15 +299,7 @@ static void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_0;
   sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_71CYCLES_5;
-  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Configure Regular Channel
-  */
-  sConfig.Channel = ADC_CHANNEL_1;
-  sConfig.Rank = ADC_REGULAR_RANK_2;
+  sConfig.SamplingTime = ADC_SAMPLETIME_239CYCLES_5;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -312,6 +307,51 @@ static void MX_ADC1_Init(void)
   /* USER CODE BEGIN ADC1_Init 2 */
 
   /* USER CODE END ADC1_Init 2 */
+
+}
+
+/**
+  * @brief ADC2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_ADC2_Init(void)
+{
+
+  /* USER CODE BEGIN ADC2_Init 0 */
+
+  /* USER CODE END ADC2_Init 0 */
+
+  ADC_ChannelConfTypeDef sConfig = {0};
+
+  /* USER CODE BEGIN ADC2_Init 1 */
+
+  /* USER CODE END ADC2_Init 1 */
+  /** Common config
+  */
+  hadc2.Instance = ADC2;
+  hadc2.Init.ScanConvMode = ADC_SCAN_DISABLE;
+  hadc2.Init.ContinuousConvMode = ENABLE;
+  hadc2.Init.DiscontinuousConvMode = DISABLE;
+  hadc2.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+  hadc2.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc2.Init.NbrOfConversion = 1;
+  if (HAL_ADC_Init(&hadc2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Regular Channel
+  */
+  sConfig.Channel = ADC_CHANNEL_1;
+  sConfig.Rank = ADC_REGULAR_RANK_1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_239CYCLES_5;
+  if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN ADC2_Init 2 */
+
+  /* USER CODE END ADC2_Init 2 */
 
 }
 
@@ -394,35 +434,35 @@ static void MX_USART1_UART_Init(void)
 }
 
 /**
-  * @brief USART3 Initialization Function
+  * @brief USART2 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_USART3_UART_Init(void)
+static void MX_USART2_UART_Init(void)
 {
 
-  /* USER CODE BEGIN USART3_Init 0 */
+  /* USER CODE BEGIN USART2_Init 0 */
 
-  /* USER CODE END USART3_Init 0 */
+  /* USER CODE END USART2_Init 0 */
 
-  /* USER CODE BEGIN USART3_Init 1 */
+  /* USER CODE BEGIN USART2_Init 1 */
 
-  /* USER CODE END USART3_Init 1 */
-  huart3.Instance = USART3;
-  huart3.Init.BaudRate = 57600;
-  huart3.Init.WordLength = UART_WORDLENGTH_8B;
-  huart3.Init.StopBits = UART_STOPBITS_1;
-  huart3.Init.Parity = UART_PARITY_NONE;
-  huart3.Init.Mode = UART_MODE_TX_RX;
-  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart3) != HAL_OK)
+  /* USER CODE END USART2_Init 1 */
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = 57600;
+  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart2) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN USART3_Init 2 */
+  /* USER CODE BEGIN USART2_Init 2 */
 
-  /* USER CODE END USART3_Init 2 */
+  /* USER CODE END USART2_Init 2 */
 
 }
 
@@ -438,7 +478,6 @@ static void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pins : select_Pin plus_Pin minus_Pin */
   GPIO_InitStruct.Pin = select_Pin|plus_Pin|minus_Pin;
@@ -462,13 +501,12 @@ static void MX_GPIO_Init(void)
 void sendData1Task(void *argument)
 {
   /* USER CODE BEGIN 5 */
-	btnParameterInit();
+
   /* Infinite loop */
   for(;;)
   {
   transmissionDriver1();
-  osDelay(10);
-
+  osDelay(5);
   }
   /* USER CODE END 5 */
 }
@@ -487,7 +525,7 @@ void sendData2Task(void *argument)
   for(;;)
   {
 	transmissionDriver2();
-	osDelay(10);
+	osDelay(5);
   }
   /* USER CODE END sendData2Task */
 }
@@ -506,13 +544,13 @@ void readAdcTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
-	readAnalog2Values(&hadc1);
+	readAnalog2Values(&hadc1,&hadc2);
 	val1=valuesMap(getAnalogValue1(),0,4095,0,1000);
 	setDriver1AngleValue(val1);
-	osDelay(15);
+	osDelay(5);
 	val2=valuesMap(getAnalogValue2(),0,4095,0,1000);
 	setDriver2AngleValue(val2);
-	osDelay(15);
+	osDelay(5);
   }
   /* USER CODE END readAdcTask */
 }
@@ -531,7 +569,7 @@ void getData1Task(void *argument)
   for(;;)
   {
 	MDI_getDataChannel1();
-	osDelay(15);
+	osDelay(5);
   }
   /* USER CODE END getData1Task */
 }
@@ -550,7 +588,7 @@ void getData2Task(void *argument)
   for(;;)
   {
 	MDI_getDataChannel2();
-	osDelay(15);
+	osDelay(5);
   }
   /* USER CODE END getData2Task */
 }
@@ -565,7 +603,7 @@ void getData2Task(void *argument)
 void btnControlTask(void *argument)
 {
   /* USER CODE BEGIN btnControlTask */
-	buttonController();
+	btnParameterInit();
   /* Infinite loop */
   for(;;)
   {

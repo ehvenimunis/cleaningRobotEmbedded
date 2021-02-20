@@ -24,14 +24,15 @@ uint16_t getAnalogValue1(void){return analogValue1;}
 #elif ANALOGINPUTVAL==2
 uint16_t analogValue1;
 uint16_t analogValue2;
-void readAnalog2Values(ADC_HandleTypeDef *adc){
-	  HAL_Delay(100);
-	  HAL_ADC_Start(adc);
-	  HAL_ADC_PollForConversion(adc, ADCTIMEOUT);
-	  analogValue1 = HAL_ADC_GetValue(adc);
-	  HAL_ADC_PollForConversion(adc, ADCTIMEOUT);
-	  analogValue2 = HAL_ADC_GetValue(adc);
-	  HAL_ADC_Stop (adc);
+void readAnalog2Values(ADC_HandleTypeDef *adc1,ADC_HandleTypeDef *adc2){
+	  HAL_ADC_Start(adc1);
+	  HAL_ADC_PollForConversion(adc1, ADCTIMEOUT);
+	  analogValue1 = HAL_ADC_GetValue(adc1);
+	  HAL_ADC_Stop (adc1);
+	  HAL_ADC_Start(adc2);
+	  HAL_ADC_PollForConversion(adc2, ADCTIMEOUT);
+	  analogValue2 = HAL_ADC_GetValue(adc2);
+	  HAL_ADC_Stop (adc2);
 }
 uint16_t getAnalogValue1(void){return analogValue1;}
 uint16_t getAnalogValue2(void){return analogValue2;}

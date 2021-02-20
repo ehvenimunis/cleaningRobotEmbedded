@@ -174,9 +174,12 @@ void MDI_getDataChannel1(void){
  */
 void MDI_sendDataChannel2(uint16_t angleVal,uint8_t kd,uint8_t ki,uint8_t kp,uint8_t factor ){
 	uint16_t checksumTmp=0;
-	MDI_writeCommand(&MDI_channel2,0xFF); checksumTmp+=0xFF;
-	MDI_writeCommand(&MDI_channel2,0xFF); checksumTmp+=0xFF; //Data transmission started
-	MDI_2byteWriteData(&MDI_channel2,angleVal); checksumTmp+=angleVal; //2 byte angle val sended
+	MDI_writeCommand(&MDI_channel2,0xFF);
+	MDI_writeCommand(&MDI_channel2,0xFF); //Data transmission started
+	MDI_2byteWriteData(&MDI_channel2,angleVal);
+	uint8_t tmpArr[] ={angleVal >> 8, angleVal & 0xFF};
+	checksumTmp+=tmpArr[0];
+	checksumTmp+=tmpArr[1]; //2 byte angle val sended
 	MDI_writeSmallData(&MDI_channel2,kd); checksumTmp+=kd; //writed kd
 	MDI_writeSmallData(&MDI_channel2,ki); checksumTmp+=ki; //writed ki
 	MDI_writeSmallData(&MDI_channel2,kp); checksumTmp+=kp; //writed kp
@@ -193,7 +196,7 @@ void MDI_sendDataChannel2(uint16_t angleVal,uint8_t kd,uint8_t ki,uint8_t kp,uin
  */
 uint8_t getFirstData2;
 void MDI_getDataChannel2(void){
-	HAL_UART_Receive(&MDI_channel1,(uint8_t*)&getFirstData2,1,TIMEOUTVAL);
+	HAL_UART_Receive(&MDI_channel2,(uint8_t*)&getFirstData2,1,TIMEOUTVAL);
 	if(0xFF ==getFirstData2){
 	HAL_UART_Receive(&MDI_channel2,(uint8_t*)rec2Buff,10,100);
 	if(0xFF==rec2Buff[0]){
